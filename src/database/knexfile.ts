@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import { pg } from '../config/conf';
-
+console.log(pg);
 const {
   database,
   host,
@@ -11,6 +11,10 @@ const {
   port,
   user,
 } = pg;
+ 
+
+
+
 
 const config: { [key: string]: Knex.Config } = {
   development: {

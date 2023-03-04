@@ -1,10 +1,12 @@
+import * as dotenv from 'dotenv' 
+dotenv.config()
+
 import http from 'http';
 import App from "./src/server";
 import router from "./src/router";
+
 import {serverConfig}  from './src/config/conf';
 
-// import * as dotenv from 'dotenv' 
-// dotenv.config()
 
 const ExpressApp = new App(router)
 

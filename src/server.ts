@@ -1,6 +1,6 @@
 import cors from "cors";
 import express, { Express, Router } from 'express';
-import errorHandler from "./shared/middlewares/errorHandler";
+import errorHandler from "./modules/shared/middlewares/errorHandler";
 import morgan from 'morgan';  
 
 class App {
