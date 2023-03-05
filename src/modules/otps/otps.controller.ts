@@ -40,9 +40,9 @@ export default class OtpsController {
             if(lastSendOtp && !isOtpExpired(lastSendOtp.sent_time)) { 
                 res.status(400).json({message:"Cannot send, last one is active"})
 
-                return
+                return;
             };
- 
+
 
             if(Number(userOtp.request_count) === Number(OtpConfig.req_temp_limit)) {
                 await this.otpsService.blockTemporary(userOtp.id);
@@ -77,8 +77,7 @@ export default class OtpsController {
                 message: "OTP sent successfully",
                 otp: sendOtp.code
             })
-
-
+ 
         } catch (error) {
             next(error)
         }
@@ -171,7 +170,7 @@ export default class OtpsController {
 
             const lastSendOtp: IOtpCode = await this.otpsService.getLastOtpCode(userOtp.id);
 
-            if (!(getCurrentDate() >= getExpireDate(lastSendOtp.sent_time))) {
+            if (lastSendOtp && !(getCurrentDate() >= getExpireDate(lastSendOtp.sent_time))) {
                 throw new ErrorResponse(400, 'Cannot send, last one is active now')
             }
 
@@ -189,7 +188,7 @@ export default class OtpsController {
         }
     }
 
-    public unBlockPermanentBlock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    public unBlockPermanentBlock = async (req: Request, res: Response, next: NextFunction):Promise<void> => {
         try { 
             const { phone }: ICreateUser = req.body
             

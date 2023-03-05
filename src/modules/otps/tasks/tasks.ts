@@ -22,6 +22,8 @@ export default class TasksService {
     async deactivateAllExpiredCodes() {  
         const expireCodes = await this.otpsDao.findAllExpiredCodes();
 
+        console.log(expireCodes)
+
         expireCodes.map(async(code) => {
             await this.otpsDao.deactivateOtpById(code.id)
         })

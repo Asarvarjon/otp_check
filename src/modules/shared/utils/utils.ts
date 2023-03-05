@@ -20,7 +20,8 @@ export function getDateByValue(date: number | Date) {
 }
 
 export function getCurrentDate() {
-  return Date.now();
+  return new Date(Date.now()).getTime()
+
 } 
  
 

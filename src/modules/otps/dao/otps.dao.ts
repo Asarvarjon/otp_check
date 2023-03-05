@@ -25,6 +25,8 @@ export default class OtpDAO {
   } 
 
   async unblockTemporaryBlocked() { 
+    console.log(new Date(getCurrentDate()).toLocaleString());
+    
       await KnexService('user_otps')  
       .update({
         temp_block_end_time: null,
@@ -39,7 +41,7 @@ export default class OtpDAO {
 
   async findAllExpiredCodes() { 
     return await KnexService('otp_codes')
-    .where('sent_time', '<', new Date(getCurrentDate() - Number(OtpConfig.otp_exp_time) * 60 * 100).toISOString())
+    .where('sent_time', '<', new Date(getCurrentDate() - Number(OtpConfig.otp_exp_time) * 60 * 100).toLocaleString())
     .andWhere('is_active', true);
   } 
 
