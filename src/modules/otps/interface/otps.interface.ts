@@ -31,6 +31,7 @@ export interface IOtpCode {
 export interface ICreateOtpCode {
   code: number;
   otp_id: string;
+  sent_time?: Date
 }
 
 export interface IConfirmOtp {

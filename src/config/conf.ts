@@ -29,5 +29,4 @@ export const OtpConfig = {
   temp_block_duration: env.temp_block_duration
 }
   
-
-console.log(OtpConfig);
+ 

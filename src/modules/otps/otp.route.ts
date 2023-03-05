@@ -15,5 +15,11 @@ export default class OtpsRoute implements Routes {
 
   private initializeRoutes() {
     this.router.post(`${this.path}request`, this.otpsController.requestOtp); 
+
+    this.router.post(`${this.path}confirm`, this.otpsController.confirm); 
+
+    this.router.post(`${this.path}resend`, this.otpsController.resendOtp); 
+
+    this.router.post(`${this.path}unblock`, this.otpsController.unBlockPermanentBlock); 
   }
 }

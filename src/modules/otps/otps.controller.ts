@@ -5,7 +5,7 @@ import UserService from "../../modules/users/users.service";
 import OTPService from './otp.service';
 import ErrorResponse from '../../modules/shared/utils/errorResponse';
 import { OtpConfig } from '../../config/conf';
-import { getCurrentDate, getExpireDate, isOtpExpired } from 'modules/shared/utils/utils';
+import { getCurrentDate, getExpireDate, isOtpExpired } from '../../modules/shared/utils/utils';
 
 
 export default class OtpsController {
@@ -31,13 +31,18 @@ export default class OtpsController {
                 })
             };
 
-            if(Number(userOtp.request_count) === Number(OtpConfig.req_temp_limit)) {
-                await this.otpsService.blockTemporary(userOtp.id);
-                res.status(400).json({
-                    success: false,
-                    message: "Too many requests, try later",
-                })
+            if(userOtp.permanent_blocked) {
+                throw new ErrorResponse(400, 'You are permanently blocked, Please contact to the support!')
             }
+
+            const lastSendOtp = await this.otpsService.getLastOtpCode(userOtp.id);
+            
+            if(lastSendOtp && !isOtpExpired(lastSendOtp.sent_time)) { 
+                res.status(400).json({message:"Cannot send, last one is active"})
+
+                return
+            };
+ 
 
             if(Number(userOtp.request_count) === Number(OtpConfig.req_temp_limit)) {
                 await this.otpsService.blockTemporary(userOtp.id);
@@ -65,9 +70,7 @@ export default class OtpsController {
             };
 
             const sendOtp: IOtpCode = await this.otpsService.createOtpCode(userOtp.id);
-
-            console.log(sendOtp);
-            
+        
 
             res.status(200).json({
                 success: true,
@@ -81,7 +84,7 @@ export default class OtpsController {
         }
     }
 
-    public checkOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    public confirm = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try { 
             const {code, phone} = req.body;
 
@@ -100,10 +103,12 @@ export default class OtpsController {
 
             const lastSendOtp = await this.otpsService.getLastOtpCode(userOtp.id);
 
-            if(lastSendOtp.code === code && !isOtpExpired(lastSendOtp.sentTime)) {
+            if(lastSendOtp && lastSendOtp.code === code && !isOtpExpired(lastSendOtp.sent_time)) {
                 await this.otpsService.update(userOtp.id,{
                     fail_count: 0
                 });
+
+                await this.otpsService.deactivateOtpById(lastSendOtp.id)
 
                 res.status(200).json({
                     success: true,
@@ -115,6 +120,7 @@ export default class OtpsController {
 
 
             let newUserOtp = await this.otpsService.increaseFailCount(userOtp.id);
+            
 
             if(Number(newUserOtp.fail_count) === Number(OtpConfig.fail_temp_limit)) {
                 await this.otpsService.blockTemporary(newUserOtp.id);
@@ -125,9 +131,7 @@ export default class OtpsController {
                 })
 
                 return;
-            }
-
-            if(Number(newUserOtp.fail_count) >= Number(OtpConfig.fail_perm_limit)) {
+            }else if(Number(newUserOtp.fail_count) >= Number(OtpConfig.fail_perm_limit)) {
                 await this.otpsService.blockPermanent(newUserOtp.id)
 
                 await this.otpsService.update(newUserOtp.id, {
@@ -143,7 +147,8 @@ export default class OtpsController {
             };
 
             res.status(400).json({ 
-                message: "Please, request another otp",
+                succes: false,
+                message: "Otp check failed",
             })
 
 
@@ -178,6 +183,31 @@ export default class OtpsController {
                 otp: sendOtp.code
             })
 
+
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    public unBlockPermanentBlock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try { 
+            const { phone }: ICreateUser = req.body
+            
+            let user = await this.usersService.findByPhone(phone);
+
+            if(!user) {
+                throw new ErrorResponse(400, 'User not found')
+            };
+
+            let userOtp: IUserOtp = await this.otpsService.findUserOtpByUserId(user.id);
+
+            const unblocked = await this.otpsService.unblockPermanent(userOtp.id)
+
+            
+            res.status(200).json({
+                success: true,
+                message: "Unblocked succesfully", 
+            })
 
         } catch (error) {
             next(error)

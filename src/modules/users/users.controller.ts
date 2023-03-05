@@ -7,8 +7,6 @@ export default class UsersController {
 
     public create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            console.log(req.body);
-            
             const userData: CreateUserDTO = req.body
 
 

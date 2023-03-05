@@ -2,7 +2,7 @@ import { ICreateUserOtp, IUserOtp, ICreateOtpCode, IUpdateUserOtp, IOtpCode } fr
 import UserService from "../../modules/users/users.service";
 import ErrorResponse from "../shared/utils/errorResponse"; 
 import OtpsDAO from "./dao/otps.dao"; 
-import { calculateTempBlockEndTime, generateRandomDigit } from '../../modules/shared/utils/utils';
+import { calculateTempBlockEndTime, generateRandomDigit, getCurrentDate } from '../../modules/shared/utils/utils';
 
 export default class OTPService {
   private OtpDigitsCount = 5;
@@ -20,8 +20,10 @@ export default class OTPService {
 
     const data: IOtpCode = await this.otpsDao.createOtpCode({
       otp_id: user_otp_id,
-      code: Number(code)
-    });
+      code: Number(code),
+      sent_time: new Date()
+    }); 
+    
 
     const increasedCount = await this.increaseRequestCount(user_otp_id);
     
@@ -35,6 +37,7 @@ export default class OTPService {
 
   async getLastOtpCode(id: string) {
     const data = await this.otpsDao.getLastOtpCode(id);
+ 
     return data
   }
 
@@ -44,8 +47,8 @@ export default class OTPService {
   }
 
   async blockTemporary(otp_id: string) {
-    const temp_block_end_time = calculateTempBlockEndTime()
-
+    const temp_block_end_time = calculateTempBlockEndTime() 
+    
     const data = await this.otpsDao.blockTemporary(otp_id, temp_block_end_time);
     return data
   }
@@ -55,20 +58,25 @@ export default class OTPService {
     return data
   }
 
+  async unblockPermanent(otp_id: string) { 
+    const data = await this.otpsDao.unblockPermanent(otp_id);
+    return data
+  }
+
   async increaseRequestCount(id: string) { 
     const data: IUserOtp = await this.otpsDao.increaseRequestCount(id);
     return data
   }
-
 
   async increaseFailCount(id: string) { 
     const data: IUserOtp = await this.otpsDao.increaseFailCount(id);
     return data
   }
 
-
   async update(otp_id: string, values: IUpdateUserOtp) { 
     const data: IUserOtp = await this.otpsDao.update(otp_id, values);
     return data
   }
+
+
 }

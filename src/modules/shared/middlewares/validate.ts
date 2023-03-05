@@ -11,7 +11,7 @@ const validationMiddleware = (
   return async (req, res, next) => {
     try {
       const errors = await validate(plainToInstance(type, req[value]), {skipMissingProperties});
-      console.log(errors);
+       
 
       if (errors.length >= 1) {
 

@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import { pg } from '../config/conf';
-console.log(pg);
+ 
 const {
   database,
   host,

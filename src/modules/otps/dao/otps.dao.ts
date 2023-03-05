@@ -1,3 +1,5 @@
+import { OtpConfig } from './../../../config/conf';
+import { getCurrentDate } from '../../../modules/shared/utils/utils';
 import { ICreateUserOtp, ICreateOtpCode } from './../interface/otps.interface';
 import KnexService from '../../../database/connection';
 import { getFirst } from '../../shared/utils/utils'; 
@@ -20,6 +22,25 @@ export default class OtpDAO {
         user_id
       })
     );
+  } 
+
+  async unblockTemporaryBlocked() { 
+      await KnexService('user_otps')  
+      .update({
+        temp_block_end_time: null,
+        temporary_blocked: false
+      }) 
+      .where({
+        temporary_blocked: true,
+      })
+      .andWhere('temp_block_end_time', '<', new Date(getCurrentDate()).toISOString())
+  } 
+
+
+  async findAllExpiredCodes() { 
+    return await KnexService('otp_codes')
+    .where('sent_time', '<', new Date(getCurrentDate() - Number(OtpConfig.otp_exp_time) * 60 * 100).toISOString())
+    .andWhere('is_active', true);
   } 
 
   
@@ -48,7 +69,7 @@ export default class OtpDAO {
     return getFirst(
       await KnexService('user_otps')
       .update({ 
-          request_count: KnexService.raw('fail_count + 1')
+        fail_count: KnexService.raw('fail_count + 1')
       })
       .where('id', id)
       .returning('*')
@@ -75,6 +96,17 @@ export default class OtpDAO {
     )
   }
 
+  async unblockPermanent(otp_id: string ) {
+    return getFirst(
+      await KnexService('user_otps')
+      .update({ 
+          permanent_blocked: false
+        })
+      .where('id', otp_id)
+      .returning('*')
+    )
+  }
+
   async createOtpCode(data: ICreateOtpCode) {
     return getFirst(
       await KnexService('otp_codes')
@@ -86,7 +118,8 @@ export default class OtpDAO {
   async getLastOtpCode(id: string) {
     return getFirst(
       await KnexService('otp_codes')
-        .where({ opt_id: id, is_active: true })
+        .orderBy('sent_time', 'desc')
+        .where({ otp_id: id, is_active: true })
     );
   } 
 

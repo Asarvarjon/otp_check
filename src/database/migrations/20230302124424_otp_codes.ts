@@ -7,7 +7,8 @@ export async function up(knex: Knex): Promise<void> {
             id uuid primary key default uuid_generate_v4(),
             otp_id uuid references user_otps(id) not null,
             code int not null,
-            sent_time timestamp with time zone not null default current_timestamp
+            is_active bool default true,
+            sent_time timestamp not null default current_timestamp
         );
     `)
 }

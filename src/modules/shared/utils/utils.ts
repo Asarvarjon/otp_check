@@ -22,6 +22,7 @@ export function getDateByValue(date: number | Date) {
 export function getCurrentDate() {
   return Date.now();
 } 
+ 
 
 export function calculateTempBlockEndTime() {
   const now = new Date(); // current date and time
@@ -32,6 +33,8 @@ export function calculateTempBlockEndTime() {
 
 export function isOtpExpired(sentTime) {
   const now = new Date();
-  const expireTime = sentTime.getTime() + (Number(OtpConfig.otp_exp_time )* 60 * 1000);
+  
+  const expireTime = sentTime.getTime() + (Number(OtpConfig.otp_exp_time)* 60 * 1000);
+   
   return now.getTime() > expireTime;
 }

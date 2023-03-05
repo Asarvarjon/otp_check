@@ -9,7 +9,7 @@ export async function up(knex: Knex): Promise<void> {
             request_count int default 0,
             fail_count int default 0,
             temporary_blocked bool default false,
-            temp_block_end_time timestamp with time zone,
+            temp_block_end_time timestamp,
             permanent_blocked bool default false
         );
     `)
