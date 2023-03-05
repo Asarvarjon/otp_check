@@ -200,6 +200,10 @@ export default class OtpsController {
 
             let userOtp: IUserOtp = await this.otpsService.findUserOtpByUserId(user.id);
 
+            if(!userOtp.permanent_blocked) {
+                throw new ErrorResponse(400, 'User are not permanently blocked')
+            }
+
             const unblocked = await this.otpsService.unblockPermanent(userOtp.id)
 
             
